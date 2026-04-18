@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+  <meta name="description" content="Дипломное приложение на Go для прогноза погоды по населенным пунктам.">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="brand-block">
+        <p class="eyebrow">Go / SQLite / Open-Meteo</p>
+        <h1>AeroCast</h1>
+        <p class="hero-copy">
+          Веб-приложение для прогноза погоды по городу, селу или поселку
+          с акцентом на осадки, комфорт восприятия и наглядную аналитику.
+        </p>
+      </div>
+
+      <form class="search-panel" id="search-form" autocomplete="off">
+        <label class="search-label" for="location-input">Населенный пункт</label>
+        <div class="search-row">
+          <input
+            id="location-input"
+            name="location"
+            type="text"
+            placeholder="Например: Казань, Зеленоградск, Таруса"
+            spellcheck="false"
+          >
+          <button type="submit">Показать прогноз</button>
+        </div>
+        <div class="search-results" id="search-results" hidden></div>
+        <p class="search-hint">
+          Поддерживаются города, поселки, села и другие населенные пункты.
+        </p>
+      </form>
+    </header>
+
+    <main class="dashboard">
+      <section class="current-card panel">
+        <div class="current-head">
+          <div>
+            <p class="section-label">Текущая ситуация</p>
+            <h2 id="current-place">Загрузка прогноза...</h2>
+            <p class="section-subtitle" id="current-summary">Подбираем первую локацию для демонстрации.</p>
+          </div>
+          <div class="weather-mark" id="current-icon"></div>
+        </div>
+
+        <div class="current-metrics">
+          <div class="temp-cluster">
+            <span class="current-temp" id="current-temp">--</span>
+            <span class="temp-note" id="feels-like">Ощущается как --</span>
+          </div>
+          <div class="mini-grid">
+            <article>
+              <span>Осадки сейчас</span>
+              <strong id="current-precip">--</strong>
+            </article>
+            <article>
+              <span>Влажность</span>
+              <strong id="current-humidity">--</strong>
+            </article>
+            <article>
+              <span>Ветер</span>
+              <strong id="current-wind">--</strong>
+            </article>
+            <article>
+              <span>Часовой пояс</span>
+              <strong id="current-timezone">--</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="forecast-card panel">
+        <div class="section-head">
+          <div>
+            <p class="section-label">Прогноз</p>
+            <h3>Ближайшие 3 дня</h3>
+          </div>
+          <p class="section-subtitle">Краткая сводка по температуре, ветру и вероятности осадков.</p>
+        </div>
+        <div class="forecast-grid" id="forecast-grid"></div>
+      </section>
+
+      <section class="chart-card panel">
+        <div class="section-head">
+          <div>
+            <p class="section-label">Осадки</p>
+            <h3>Вероятность по часам</h3>
+          </div>
+          <p class="section-subtitle" id="chart-caption">Показываем вероятность осадков на 72 часа.</p>
+        </div>
+        <div class="chart-summary" id="chart-summary"></div>
+        <div class="chart-frame" id="precip-chart"></div>
+      </section>
+
+      <section class="details-card panel">
+        <div class="section-head">
+          <div>
+            <p class="section-label">Детали</p>
+            <h3>Данные для анализа</h3>
+          </div>
+          <p class="section-subtitle">Параметры, которые удобно вынести в дипломное описание и диаграммы.</p>
+        </div>
+        <div class="details-grid" id="details-grid"></div>
+      </section>
+
+      <section class="history-card panel">
+        <div class="section-head">
+          <div>
+            <p class="section-label">История</p>
+            <h3>Последние запросы</h3>
+          </div>
+          <p class="section-subtitle">Данные сохраняются в локальной SQLite базе.</p>
+        </div>
+        <div class="history-list" id="history-list"></div>
+      </section>
+    </main>
+
+    <footer class="app-f

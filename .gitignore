@@ -1,0 +1,10 @@
+bin/
+dist/
+*.exe
+*.dll
+*.test
+data/*.db
+data/*.db-*
+.DS_Store
+.idea/
+.vscode/
