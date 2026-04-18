@@ -229,6 +229,13 @@ async function fetchForecast(location, options = {}) {
   });
 
   const payload = await fetchJSON(`/api/forecast?${params.toString()}`);
+  state.selectedLocation = {
+    name: payload.location.name,
+    region: payload.location.region,
+    country: payload.location.country,
+    latitude: payload.location.latitude,
+    longitude: payload.location.longitude,
+  };
   renderForecast(payload);
   await loadHistory();
 }
@@ -419,14 +426,14 @@ function renderChart(hourly, title) {
   }).join("");
 
   const dayMarks = times
-    .map((time, index) => ({ time, index }))
-    .filter(({ index, time }) => index === 0 || time.endsWith("00:00"))
+    .map((label, index) => ({ label, index }))
+    .filter((item) => item.index === 0 || item.label.endsWith("00:00"))
     .slice(0, 4)
-    .map(({ time, index }) => {
-      const x = paddingX + (chartWidth / Math.max(values.length - 1, 1)) * index;
+    .map((item) => {
+      const x = paddingX + (chartWidth / Math.max(values.length - 1, 1)) * item.index;
       return `
         <line class="grid-line" x1="${x}" y1="${paddingTop}" x2="${x}" y2="${paddingTop + chartHeight}"></line>
-        <text class="axis-label" x="${x - 18}" y="${height - 10}">${compactDayLabel(time)}</text>
+        <text class="axis-label" x="${x - 18}" y="${height - 10}">${compactDayLabel(item.label)}</text>
       `;
     })
     .join("");
