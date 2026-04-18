@@ -201,6 +201,13 @@ function polylineToPath(points) {
   ), "");
 }
 
+function scrollToTopSmooth() {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+}
+
 async function fetchJSON(url) {
   const response = await fetch(url);
   if (!response.ok) {
@@ -487,21 +494,21 @@ function clearSkyScene() {
   return `
     <div class="weather-scene weather-scene--clear-day">
       <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
-        <circle class="weather-scene__halo" cx="80" cy="74" r="40"></circle>
-        <circle class="weather-scene__sun" cx="80" cy="74" r="25"></circle>
+        <circle class="weather-scene__glow" cx="80" cy="76" r="42"></circle>
+        <circle class="weather-scene__sun-disc" cx="80" cy="76" r="24"></circle>
         <g class="weather-scene__rays">
-          <path d="M80 22v16"></path>
-          <path d="M80 110v16"></path>
-          <path d="M132 74h-16"></path>
-          <path d="M44 74H28"></path>
-          <path d="M117 37l-11 11"></path>
-          <path d="M54 100 43 111"></path>
-          <path d="M117 111l-11-11"></path>
-          <path d="M54 48 43 37"></path>
+          <path d="M80 26v14"></path>
+          <path d="M80 112v14"></path>
+          <path d="M130 76h-14"></path>
+          <path d="M44 76H30"></path>
+          <path d="m116 40-10 10"></path>
+          <path d="m54 102-10 10"></path>
+          <path d="m116 112-10-10"></path>
+          <path d="M54 50 44 40"></path>
         </g>
-        <circle class="weather-scene__spark" cx="36" cy="38" r="3"></circle>
-        <circle class="weather-scene__spark weather-scene__spark--late" cx="122" cy="48" r="2.5"></circle>
-        <circle class="weather-scene__spark" cx="118" cy="112" r="3"></circle>
+        <circle class="weather-scene__twinkle" cx="36" cy="42" r="3"></circle>
+        <circle class="weather-scene__twinkle weather-scene__twinkle--late" cx="122" cy="50" r="2.5"></circle>
+        <circle class="weather-scene__twinkle" cx="118" cy="112" r="3"></circle>
       </svg>
     </div>
   `;
@@ -511,13 +518,13 @@ function clearNightScene() {
   return `
     <div class="weather-scene weather-scene--clear-night">
       <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
-        <circle class="weather-scene__moon-glow" cx="92" cy="68" r="34"></circle>
-        <circle class="weather-scene__moon" cx="90" cy="70" r="24"></circle>
-        <circle class="weather-scene__moon-cut" cx="102" cy="60" r="22"></circle>
-        <circle class="weather-scene__star" cx="46" cy="42" r="3"></circle>
-        <circle class="weather-scene__star weather-scene__spark--late" cx="122" cy="36" r="2.5"></circle>
-        <circle class="weather-scene__star" cx="118" cy="102" r="2.5"></circle>
-        <circle class="weather-scene__star weather-scene__spark--late" cx="58" cy="112" r="2"></circle>
+        <circle class="weather-scene__glow weather-scene__glow--moon" cx="94" cy="70" r="34"></circle>
+        <circle class="weather-scene__moon-disc" cx="90" cy="72" r="24"></circle>
+        <circle class="weather-scene__moon-cut" cx="102" cy="62" r="22"></circle>
+        <circle class="weather-scene__twinkle" cx="42" cy="42" r="3"></circle>
+        <circle class="weather-scene__twinkle weather-scene__twinkle--late" cx="122" cy="38" r="2.5"></circle>
+        <circle class="weather-scene__twinkle" cx="118" cy="104" r="2.5"></circle>
+        <circle class="weather-scene__twinkle weather-scene__twinkle--late" cx="56" cy="114" r="2"></circle>
       </svg>
     </div>
   `;
@@ -529,7 +536,8 @@ function partlyCloudyScene(isDay) {
       <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
         ${isDay
           ? `
-            <circle class="weather-scene__sun weather-scene__sun--small" cx="58" cy="56" r="20"></circle>
+            <circle class="weather-scene__glow" cx="58" cy="56" r="30"></circle>
+            <circle class="weather-scene__sun-disc" cx="58" cy="56" r="19"></circle>
             <g class="weather-scene__rays weather-scene__rays--small">
               <path d="M58 24v12"></path>
               <path d="M58 76v12"></path>
@@ -542,22 +550,12 @@ function partlyCloudyScene(isDay) {
             </g>
           `
           : `
-            <circle class="weather-scene__moon" cx="62" cy="58" r="20"></circle>
+            <circle class="weather-scene__glow weather-scene__glow--moon" cx="62" cy="58" r="28"></circle>
+            <circle class="weather-scene__moon-disc" cx="62" cy="58" r="20"></circle>
             <circle class="weather-scene__moon-cut" cx="72" cy="50" r="18"></circle>
-            <circle class="weather-scene__star" cx="112" cy="40" r="2.5"></circle>
+            <circle class="weather-scene__twinkle" cx="112" cy="40" r="2.5"></circle>
           `}
-        <g class="weather-scene__cloud weather-scene__cloud--back">
-          <circle cx="70" cy="92" r="20"></circle>
-          <circle cx="96" cy="82" r="24"></circle>
-          <circle cx="122" cy="94" r="18"></circle>
-          <rect x="50" y="94" width="90" height="24" rx="12"></rect>
-        </g>
-        <g class="weather-scene__cloud weather-scene__cloud--front">
-          <circle cx="48" cy="104" r="14"></circle>
-          <circle cx="68" cy="96" r="17"></circle>
-          <circle cx="88" cy="106" r="13"></circle>
-          <rect x="34" y="106" width="64" height="18" rx="9"></rect>
-        </g>
+        <path class="weather-scene__cloud-shape weather-scene__cloud-shape--soft weather-scene__float-slow" d="M50 110c-10 0-18-7-18-17 0-8 6-15 14-17 3-15 16-25 32-25 13 0 24 5 31 15 3-1 6-2 10-2 12 0 22 10 22 22 0 13-10 24-24 24H50Z"></path>
       </svg>
     </div>
   `;
@@ -567,18 +565,8 @@ function cloudyScene() {
   return `
     <div class="weather-scene weather-scene--cloudy">
       <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
-        <g class="weather-scene__cloud weather-scene__cloud--back">
-          <circle cx="56" cy="84" r="20"></circle>
-          <circle cx="84" cy="72" r="26"></circle>
-          <circle cx="114" cy="86" r="21"></circle>
-          <rect x="36" y="84" width="100" height="28" rx="14"></rect>
-        </g>
-        <g class="weather-scene__cloud weather-scene__cloud--front">
-          <circle cx="64" cy="108" r="16"></circle>
-          <circle cx="88" cy="98" r="21"></circle>
-          <circle cx="112" cy="110" r="15"></circle>
-          <rect x="48" y="108" width="78" height="22" rx="11"></rect>
-        </g>
+        <path class="weather-scene__cloud-shape weather-scene__cloud-shape--back weather-scene__float-slow" d="M40 102c-8 0-15-6-15-15 0-7 5-13 12-15 4-15 17-25 33-25 13 0 24 5 31 15 3-1 6-2 9-2 12 0 21 9 21 21 0 12-10 21-22 21H40Z"></path>
+        <path class="weather-scene__cloud-shape weather-scene__cloud-shape--front weather-scene__float-fast" d="M54 118c-9 0-16-6-16-15 0-7 5-13 12-15 3-12 15-20 29-20 11 0 21 4 27 12 2-1 5-1 8-1 11 0 20 8 20 19s-8 20-20 20H54Z"></path>
       </svg>
     </div>
   `;
@@ -588,21 +576,10 @@ function rainScene() {
   return `
     <div class="weather-scene weather-scene--rain">
       <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
-        <g class="weather-scene__cloud weather-scene__cloud--back">
-          <circle cx="64" cy="74" r="20"></circle>
-          <circle cx="90" cy="62" r="26"></circle>
-          <circle cx="118" cy="78" r="18"></circle>
-          <rect x="44" y="74" width="96" height="28" rx="14"></rect>
-        </g>
-        <g class="weather-scene__cloud weather-scene__cloud--front weather-scene__cloud--dark">
-          <circle cx="56" cy="96" r="16"></circle>
-          <circle cx="82" cy="88" r="22"></circle>
-          <circle cx="108" cy="100" r="16"></circle>
-          <rect x="40" y="98" width="84" height="22" rx="11"></rect>
-        </g>
-        <path class="weather-scene__drop" style="animation-delay:0s" d="M58 120c4 8 4 14 0 20"></path>
-        <path class="weather-scene__drop" style="animation-delay:.25s" d="M82 122c4 8 4 14 0 20"></path>
-        <path class="weather-scene__drop" style="animation-delay:.5s" d="M106 120c4 8 4 14 0 20"></path>
+        <path class="weather-scene__cloud-shape weather-scene__cloud-shape--dark weather-scene__float-slow" d="M42 104c-9 0-16-7-16-16 0-7 5-14 12-16 4-15 17-25 33-25 13 0 24 5 31 15 3-1 6-2 10-2 12 0 22 10 22 22 0 12-10 22-22 22H42Z"></path>
+        <path class="weather-scene__rain-line" style="animation-delay:0s" d="M56 110l-8 24"></path>
+        <path class="weather-scene__rain-line" style="animation-delay:.3s" d="M82 114l-8 24"></path>
+        <path class="weather-scene__rain-line" style="animation-delay:.6s" d="M108 110l-8 24"></path>
       </svg>
     </div>
   `;
@@ -612,29 +589,24 @@ function snowScene() {
   return `
     <div class="weather-scene weather-scene--snow">
       <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
-        <g class="weather-scene__cloud weather-scene__cloud--back">
-          <circle cx="64" cy="78" r="20"></circle>
-          <circle cx="92" cy="66" r="26"></circle>
-          <circle cx="120" cy="82" r="18"></circle>
-          <rect x="44" y="78" width="98" height="28" rx="14"></rect>
+        <path class="weather-scene__cloud-shape weather-scene__float-slow" d="M44 104c-9 0-16-7-16-16 0-7 5-14 12-16 4-15 17-25 33-25 13 0 24 5 31 15 3-1 6-2 10-2 12 0 22 10 22 22 0 12-10 22-22 22H44Z"></path>
+        <g class="weather-scene__flake" style="animation-delay:0s">
+          <path d="M54 114v16"></path>
+          <path d="M46 122h16"></path>
+          <path d="m48 116 12 12"></path>
+          <path d="m60 116-12 12"></path>
         </g>
-        <g class="weather-scene__snowflake" style="animation-delay:0s">
-          <path d="M54 118v14"></path>
-          <path d="M47 125h14"></path>
-          <path d="m49 120 10 10"></path>
-          <path d="m59 120-10 10"></path>
+        <g class="weather-scene__flake" style="animation-delay:.45s">
+          <path d="M82 118v16"></path>
+          <path d="M74 126h16"></path>
+          <path d="m76 120 12 12"></path>
+          <path d="m88 120-12 12"></path>
         </g>
-        <g class="weather-scene__snowflake" style="animation-delay:.4s">
-          <path d="M82 122v14"></path>
-          <path d="M75 129h14"></path>
-          <path d="m77 124 10 10"></path>
-          <path d="m87 124-10 10"></path>
-        </g>
-        <g class="weather-scene__snowflake" style="animation-delay:.8s">
-          <path d="M110 118v14"></path>
-          <path d="M103 125h14"></path>
-          <path d="m105 120 10 10"></path>
-          <path d="m115 120-10 10"></path>
+        <g class="weather-scene__flake" style="animation-delay:.9s">
+          <path d="M110 114v16"></path>
+          <path d="M102 122h16"></path>
+          <path d="m104 116 12 12"></path>
+          <path d="m116 116-12 12"></path>
         </g>
       </svg>
     </div>
@@ -645,15 +617,10 @@ function stormScene() {
   return `
     <div class="weather-scene weather-scene--storm">
       <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
-        <g class="weather-scene__cloud weather-scene__cloud--storm">
-          <circle cx="62" cy="74" r="20"></circle>
-          <circle cx="90" cy="60" r="28"></circle>
-          <circle cx="120" cy="78" r="20"></circle>
-          <rect x="42" y="76" width="100" height="30" rx="15"></rect>
-        </g>
-        <path class="weather-scene__bolt" d="m84 102-12 26h14l-8 22 28-34H92l10-14Z"></path>
-        <path class="weather-scene__drop weather-scene__drop--storm" style="animation-delay:.1s" d="M60 116c4 8 4 14 0 20"></path>
-        <path class="weather-scene__drop weather-scene__drop--storm" style="animation-delay:.45s" d="M116 116c4 8 4 14 0 20"></path>
+        <path class="weather-scene__cloud-shape weather-scene__cloud-shape--storm weather-scene__float-slow" d="M40 102c-9 0-16-7-16-16 0-8 5-14 12-16 4-16 18-27 35-27 13 0 25 6 32 16 3-1 6-2 10-2 13 0 23 10 23 23 0 12-10 22-23 22H40Z"></path>
+        <path class="weather-scene__bolt" d="m86 100-12 24h14l-9 23 30-36H94l10-11Z"></path>
+        <path class="weather-scene__rain-line weather-scene__rain-line--storm" style="animation-delay:.1s" d="M56 112l-8 22"></path>
+        <path class="weather-scene__rain-line weather-scene__rain-line--storm" style="animation-delay:.5s" d="M112 112l-8 22"></path>
       </svg>
     </div>
   `;
@@ -663,15 +630,10 @@ function fogScene() {
   return `
     <div class="weather-scene weather-scene--fog">
       <svg viewBox="0 0 160 160" fill="none" aria-hidden="true">
-        <g class="weather-scene__cloud weather-scene__cloud--back">
-          <circle cx="60" cy="74" r="18"></circle>
-          <circle cx="88" cy="64" r="24"></circle>
-          <circle cx="114" cy="78" r="18"></circle>
-          <rect x="42" y="78" width="94" height="24" rx="12"></rect>
-        </g>
-        <path class="weather-scene__mist" d="M36 108h88"></path>
-        <path class="weather-scene__mist weather-scene__mist--late" d="M48 122h74"></path>
-        <path class="weather-scene__mist" d="M40 136h82"></path>
+        <path class="weather-scene__cloud-shape weather-scene__cloud-shape--soft weather-scene__float-slow" d="M44 100c-9 0-16-7-16-16 0-7 5-14 12-16 4-15 17-25 33-25 13 0 24 5 31 15 3-1 6-2 10-2 12 0 22 10 22 22 0 12-10 22-22 22H44Z"></path>
+        <path class="weather-scene__mist-band" d="M34 110h92"></path>
+        <path class="weather-scene__mist-band weather-scene__mist-band--late" d="M46 124h76"></path>
+        <path class="weather-scene__mist-band" d="M38 138h84"></path>
       </svg>
     </div>
   `;
@@ -750,6 +712,7 @@ async function loadHistory() {
     `;
 
     button.addEventListener("click", async () => {
+      scrollToTopSmooth();
       await fetchForecast({
         name: item.location_name,
         region: item.region,
