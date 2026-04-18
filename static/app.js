@@ -2,9 +2,13 @@ const state = {
   selectedLocation: null,
 };
 
+const GEO_FIRST_VISIT_KEY = "aerocast_geo_first_visit_done";
+
 const elements = {
   form: document.querySelector("#search-form"),
   input: document.querySelector("#location-input"),
+  geoButton: document.querySelector("#geo-button"),
+  geoStatus: document.querySelector("#geo-status"),
   results: document.querySelector("#search-results"),
   currentPlace: document.querySelector("#current-place"),
   currentSummary: document.querySelector("#current-summary"),
@@ -153,6 +157,24 @@ function compactDayLabel(timeText) {
   }).format(date);
 }
 
+function formatTooltipDateTime(timeText) {
+  if (!timeText) {
+    return "Нет данных";
+  }
+
+  const date = new Date(timeText);
+  if (Number.isNaN(date.getTime())) {
+    return "Нет данных";
+  }
+
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 function shortTime(dateText) {
   if (!dateText) {
     return "Нет данных";
@@ -206,6 +228,124 @@ function scrollToTopSmooth() {
     top: 0,
     behavior: "smooth",
   });
+}
+
+function markGeoFirstVisitHandled() {
+  try {
+    window.localStorage.setItem(GEO_FIRST_VISIT_KEY, "1");
+  } catch (error) {
+    // Ignore storage issues and keep the rest of the app working.
+  }
+}
+
+function shouldAutoUseGeolocation() {
+  try {
+    return window.localStorage.getItem(GEO_FIRST_VISIT_KEY) !== "1";
+  } catch (error) {
+    return true;
+  }
+}
+
+function setGeoStatus(message, isError = false) {
+  if (!elements.geoStatus) {
+    return;
+  }
+
+  if (!message) {
+    elements.geoStatus.hidden = true;
+    elements.geoStatus.textContent = "";
+    elements.geoStatus.classList.remove("is-error");
+    return;
+  }
+
+  elements.geoStatus.hidden = false;
+  elements.geoStatus.textContent = message;
+  elements.geoStatus.classList.toggle("is-error", isError);
+}
+
+function setGeoButtonLoading(isLoading) {
+  if (!elements.geoButton) {
+    return;
+  }
+
+  elements.geoButton.disabled = isLoading;
+  elements.geoButton.textContent = isLoading ? "Определяем..." : "Моя геопозиция";
+}
+
+function getGeolocationErrorMessage(error) {
+  if (!error || typeof error.code !== "number") {
+    return "Не удалось определить геопозицию.";
+  }
+
+  switch (error.code) {
+    case 1:
+      return "Доступ к геопозиции запрещён в браузере.";
+    case 2:
+      return "Не удалось определить текущее местоположение.";
+    case 3:
+      return "Истекло время ожидания определения геопозиции.";
+    default:
+      return "Не удалось определить геопозицию.";
+  }
+}
+
+async function requestCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 300000,
+    });
+  });
+}
+
+async function useCurrentLocation(options = {}) {
+  const auto = options.auto === true;
+
+  if (!("geolocation" in navigator)) {
+    if (auto) {
+      setGeoStatus("");
+    } else {
+      setGeoStatus("Ваш браузер не поддерживает геолокацию.", true);
+    }
+    return false;
+  }
+
+  setGeoButtonLoading(true);
+  setGeoStatus(auto ? "Пробуем определить ваше местоположение..." : "Запрашиваем доступ к геопозиции...");
+
+  try {
+    const position = await requestCurrentPosition();
+    const location = {
+      name: "Моя геопозиция",
+      region: "",
+      country: "",
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+    };
+
+    elements.results.hidden = true;
+    elements.input.value = "Моя геопозиция";
+    state.selectedLocation = location;
+    if (!auto) {
+      scrollToTopSmooth();
+    }
+    await fetchForecast(location, {
+      query: "Геопозиция",
+      save: false,
+    });
+    setGeoStatus(auto ? "" : "Прогноз построен для текущего местоположения.");
+    return true;
+  } catch (error) {
+    if (auto) {
+      setGeoStatus("");
+    } else {
+      setGeoStatus(getGeolocationErrorMessage(error), true);
+    }
+    return false;
+  } finally {
+    setGeoButtonLoading(false);
+  }
 }
 
 async function fetchJSON(url) {
@@ -418,10 +558,15 @@ function renderChart(hourly, title) {
   const points = values.map((value, index) => {
     const x = paddingX + (chartWidth / Math.max(values.length - 1, 1)) * index;
     const y = paddingTop + chartHeight - (value / 100) * chartHeight;
-    return `${x},${y}`;
+    return {
+      x,
+      y,
+      value,
+      time: times[index],
+    };
   });
 
-  const linePath = polylineToPath(points);
+  const linePath = polylineToPath(points.map((point) => `${point.x},${point.y}`));
   const areaPath = `${linePath} L ${paddingX + chartWidth},${paddingTop + chartHeight} L ${paddingX},${paddingTop + chartHeight} Z`;
 
   const grid = [0, 25, 50, 75, 100].map((step) => {
@@ -446,6 +591,7 @@ function renderChart(hourly, title) {
     .join("");
 
   elements.chart.innerHTML = `
+    <div class="chart-tooltip" id="chart-tooltip" hidden></div>
     <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="График вероятности осадков">
       <defs>
         <linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1">
@@ -457,8 +603,87 @@ function renderChart(hourly, title) {
       ${dayMarks}
       <path d="${areaPath}" fill="url(#chart-fill)"></path>
       <path d="${linePath}" fill="none" stroke="#71d7ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+      <line class="chart-hover-line" id="chart-hover-line" x1="${paddingX}" y1="${paddingTop}" x2="${paddingX}" y2="${paddingTop + chartHeight}" hidden></line>
+      <circle class="chart-hover-dot" id="chart-hover-dot" cx="${paddingX}" cy="${paddingTop + chartHeight}" r="5" hidden></circle>
+      <rect
+        class="chart-hover-layer"
+        id="chart-hover-layer"
+        x="${paddingX}"
+        y="${paddingTop}"
+        width="${chartWidth}"
+        height="${chartHeight}"
+      ></rect>
     </svg>
   `;
+
+  const tooltip = elements.chart.querySelector("#chart-tooltip");
+  const hoverLayer = elements.chart.querySelector("#chart-hover-layer");
+  const hoverLine = elements.chart.querySelector("#chart-hover-line");
+  const hoverDot = elements.chart.querySelector("#chart-hover-dot");
+
+  if (tooltip && hoverLayer && hoverLine && hoverDot) {
+    hoverLayer.addEventListener("mouseenter", () => {
+      tooltip.hidden = false;
+      hoverLine.removeAttribute("hidden");
+      hoverDot.removeAttribute("hidden");
+    });
+
+    hoverLayer.addEventListener("mousemove", (event) => {
+      const frameRect = elements.chart.getBoundingClientRect();
+      const layerRect = hoverLayer.getBoundingClientRect();
+      const relativeX = Math.max(0, Math.min(layerRect.width, event.clientX - layerRect.left));
+      const normalizedX = relativeX / Math.max(layerRect.width, 1);
+      const positionOnSeries = normalizedX * Math.max(points.length - 1, 0);
+      const leftIndex = Math.floor(positionOnSeries);
+      const rightIndex = Math.min(points.length - 1, leftIndex + 1);
+      const nearestIndex = Math.round(positionOnSeries);
+      const leftPoint = points[Math.max(0, Math.min(points.length - 1, leftIndex))];
+      const rightPoint = points[Math.max(0, Math.min(points.length - 1, rightIndex))];
+
+      if (!leftPoint || !rightPoint) {
+        return;
+      }
+
+      const mix = Math.max(0, Math.min(1, positionOnSeries - leftIndex));
+      const cursorX = paddingX + normalizedX * chartWidth;
+      const cursorY = leftPoint.y + (rightPoint.y - leftPoint.y) * mix;
+      const interpolatedValue = leftPoint.value + (rightPoint.value - leftPoint.value) * mix;
+      const nearestPoint = points[Math.max(0, Math.min(points.length - 1, nearestIndex))];
+
+      tooltip.innerHTML = `
+        <strong>${Math.round(interpolatedValue)}%</strong>
+        <span>${formatTooltipDateTime(nearestPoint?.time || "")}</span>
+      `;
+
+      hoverLine.setAttribute("x1", String(cursorX));
+      hoverLine.setAttribute("x2", String(cursorX));
+      hoverDot.setAttribute("cx", String(cursorX));
+      hoverDot.setAttribute("cy", String(cursorY));
+
+      const tooltipRect = tooltip.getBoundingClientRect();
+      let left = event.clientX - frameRect.left + 14;
+      let top = event.clientY - frameRect.top - tooltipRect.height - 14;
+
+      if (left + tooltipRect.width > frameRect.width - 8) {
+        left = frameRect.width - tooltipRect.width - 8;
+      }
+      if (left < 8) {
+        left = 8;
+      }
+      if (top < 8) {
+        top = event.clientY - frameRect.top + 14;
+      }
+
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    });
+
+    hoverLayer.addEventListener("mouseleave", () => {
+      tooltip.hidden = true;
+      hoverLine.setAttribute("hidden", "");
+      hoverDot.setAttribute("hidden", "");
+    });
+  }
 
   const peak = Math.max(...values);
   const average = values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1);
@@ -733,6 +958,14 @@ async function loadHistory() {
 
 async function bootstrap() {
   try {
+    if (shouldAutoUseGeolocation()) {
+      markGeoFirstVisitHandled();
+      const loadedFromGeo = await useCurrentLocation({ auto: true });
+      if (loadedFromGeo) {
+        return;
+      }
+    }
+
     const history = await loadHistory();
     if (history.length) {
       const item = history[0];
@@ -818,5 +1051,11 @@ document.addEventListener("click", (event) => {
     elements.results.hidden = true;
   }
 });
+
+if (elements.geoButton) {
+  elements.geoButton.addEventListener("click", async () => {
+    await useCurrentLocation();
+  });
+}
 
 bootstrap();
