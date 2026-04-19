@@ -2,8 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -12,13 +15,85 @@ import (
 )
 
 const (
-	forecastEndpoint  = "https://api.open-meteo.com/v1/forecast"
-	gfsEndpoint       = "https://api.open-meteo.com/v1/gfs"
-	geocodingEndpoint = "https://geocoding-api.open-meteo.com/v1/search"
+	forecastEndpoint         = "https://api.open-meteo.com/v1/forecast"
+	gfsEndpoint              = "https://api.open-meteo.com/v1/gfs"
+	geocodingEndpoint        = "https://geocoding-api.open-meteo.com/v1/search"
+	reverseGeocodingEndpoint = "https://nominatim.openstreetmap.org/reverse"
 )
 
 type Client struct {
 	httpClient *http.Client
+}
+
+type ErrorCode string
+
+const (
+	ErrorCodeUpstreamTimeout         ErrorCode = "upstream_timeout"
+	ErrorCodeUpstreamUnavailable     ErrorCode = "upstream_unavailable"
+	ErrorCodeUpstreamInvalidResponse ErrorCode = "upstream_invalid_response"
+)
+
+type RequestError struct {
+	Code ErrorCode
+	Err  error
+}
+
+func (e *RequestError) Error() string {
+	if e == nil {
+		return ""
+	}
+
+	if e.Err == nil {
+		return string(e.Code)
+	}
+
+	return fmt.Sprintf("%s: %v", e.Code, e.Err)
+}
+
+func (e *RequestError) Unwrap() error {
+	if e == nil {
+		return nil
+	}
+
+	return e.Err
+}
+
+type upstreamStatusError struct {
+	StatusCode int
+	Status     string
+	Body       string
+}
+
+func (e *upstreamStatusError) Error() string {
+	if e == nil {
+		return ""
+	}
+
+	if e.Body == "" {
+		return fmt.Sprintf("upstream error: %s", e.Status)
+	}
+
+	return fmt.Sprintf("upstream error: %s: %s", e.Status, e.Body)
+}
+
+type invalidResponseError struct {
+	Err error
+}
+
+func (e *invalidResponseError) Error() string {
+	if e == nil || e.Err == nil {
+		return "invalid upstream response"
+	}
+
+	return fmt.Sprintf("invalid upstream response: %v", e.Err)
+}
+
+func (e *invalidResponseError) Unwrap() error {
+	if e == nil {
+		return nil
+	}
+
+	return e.Err
 }
 
 type Location struct {
@@ -37,6 +112,23 @@ type Location struct {
 
 type searchResponse struct {
 	Results []Location `json:"results"`
+}
+
+type reverseGeocodeResponse struct {
+	DisplayName string `json:"display_name"`
+	Address     struct {
+		City         string `json:"city"`
+		Town         string `json:"town"`
+		Village      string `json:"village"`
+		Hamlet       string `json:"hamlet"`
+		Municipality string `json:"municipality"`
+		Suburb       string `json:"suburb"`
+		County       string `json:"county"`
+		State        string `json:"state"`
+		Region       string `json:"region"`
+		Country      string `json:"country"`
+		CountryCode  string `json:"country_code"`
+	} `json:"address"`
 }
 
 type ForecastResponse struct {
@@ -139,6 +231,19 @@ type probabilityFallbackResponse struct {
 func NewClient() *Client {
 	return &Client{
 		httpClient: &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
+				DialContext: (&net.Dialer{
+					Timeout:   5 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				ForceAttemptHTTP2:     true,
+				MaxIdleConns:          32,
+				MaxIdleConnsPerHost:   16,
+				IdleConnTimeout:       90 * time.Second,
+				TLSHandshakeTimeout:   5 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
 			Timeout: 12 * time.Second,
 		},
 	}
@@ -167,6 +272,52 @@ func (c *Client) SearchLocation(query, language string) ([]Location, error) {
 	return payload.Results, nil
 }
 
+func (c *Client) ReverseGeocode(latitude, longitude float64, language string) (*Location, error) {
+	params := url.Values{}
+	params.Set("lat", strconv.FormatFloat(latitude, 'f', 6, 64))
+	params.Set("lon", strconv.FormatFloat(longitude, 'f', 6, 64))
+	params.Set("format", "jsonv2")
+	params.Set("accept-language", normalizeReverseLanguage(language))
+
+	var payload reverseGeocodeResponse
+	if err := c.getJSONWithHeaders(reverseGeocodingEndpoint+"?"+params.Encode(), &payload, map[string]string{
+		"User-Agent": "AeroCast/1.0 (diploma weather app)",
+	}); err != nil {
+		return nil, err
+	}
+
+	name := firstNonEmpty(
+		payload.Address.City,
+		payload.Address.Town,
+		payload.Address.Village,
+		payload.Address.Hamlet,
+		payload.Address.Municipality,
+		payload.Address.Suburb,
+		payload.Address.County,
+	)
+	if name == "" && payload.DisplayName != "" {
+		name = strings.TrimSpace(strings.Split(payload.DisplayName, ",")[0])
+	}
+	if name == "" {
+		return nil, &RequestError{
+			Code: ErrorCodeUpstreamInvalidResponse,
+			Err:  errors.New("reverse geocoding returned empty place"),
+		}
+	}
+
+	location := &Location{
+		Name:        name,
+		Country:     strings.TrimSpace(payload.Address.Country),
+		CountryCode: strings.ToUpper(strings.TrimSpace(payload.Address.CountryCode)),
+		Admin1:      firstNonEmpty(payload.Address.State, payload.Address.Region),
+		Latitude:    latitude,
+		Longitude:   longitude,
+	}
+	location.DisplayName = composeDisplayName(location.Name, location.Admin1, location.Country)
+
+	return location, nil
+}
+
 func normalizeLanguage(language string) string {
 	switch strings.ToLower(strings.TrimSpace(language)) {
 	case "ru":
@@ -177,6 +328,15 @@ func normalizeLanguage(language string) string {
 		return "zh"
 	default:
 		return "ru"
+	}
+}
+
+func normalizeReverseLanguage(language string) string {
+	switch normalizeLanguage(language) {
+	case "zh":
+		return "zh-CN"
+	default:
+		return normalizeLanguage(language)
 	}
 }
 
@@ -226,7 +386,7 @@ func (c *Client) GetForecast(latitude, longitude float64, days int) (*ForecastRe
 	}
 
 	if err := c.mergeProbabilityFallback(&forecast, latitude, longitude, days); err != nil {
-		return nil, err
+		log.Printf("load precipitation probability fallback: %v", err)
 	}
 
 	return &forecast, nil
@@ -274,7 +434,46 @@ func (c *Client) mergeProbabilityFallback(forecast *ForecastResponse, latitude, 
 }
 
 func (c *Client) getJSON(requestURL string, target any) error {
-	response, err := c.httpClient.Get(requestURL)
+	return c.getJSONWithHeaders(requestURL, target, nil)
+}
+
+func (c *Client) getJSONWithHeaders(requestURL string, target any, headers map[string]string) error {
+	const maxAttempts = 3
+
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		if attempt > 1 {
+			time.Sleep(time.Duration(attempt-1) * 350 * time.Millisecond)
+		}
+
+		if err := c.getJSONOnce(requestURL, target, headers); err != nil {
+			lastErr = err
+			if attempt == maxAttempts || !shouldRetryRequest(err) {
+				return classifyRequestError(err)
+			}
+			continue
+		}
+
+		return nil
+	}
+
+	return classifyRequestError(lastErr)
+}
+
+func (c *Client) getJSONOnce(requestURL string, target any, headers map[string]string) error {
+	request, err := http.NewRequest(http.MethodGet, requestURL, nil)
+	if err != nil {
+		return err
+	}
+
+	for key, value := range headers {
+		if strings.TrimSpace(key) == "" || strings.TrimSpace(value) == "" {
+			continue
+		}
+		request.Header.Set(key, value)
+	}
+
+	response, err := c.httpClient.Do(request)
 	if err != nil {
 		return err
 	}
@@ -282,14 +481,82 @@ func (c *Client) getJSON(requestURL string, target any) error {
 
 	if response.StatusCode >= http.StatusBadRequest {
 		body, _ := io.ReadAll(io.LimitReader(response.Body, 2048))
-		return fmt.Errorf("upstream error %s: %s", response.Status, strings.TrimSpace(string(body)))
+		return &upstreamStatusError{
+			StatusCode: response.StatusCode,
+			Status:     response.Status,
+			Body:       strings.TrimSpace(string(body)),
+		}
 	}
 
 	if err := json.NewDecoder(response.Body).Decode(target); err != nil {
-		return fmt.Errorf("decode response: %w", err)
+		return &invalidResponseError{Err: err}
 	}
 
 	return nil
+}
+
+func shouldRetryRequest(err error) bool {
+	var statusErr *upstreamStatusError
+	if errors.As(err, &statusErr) {
+		switch statusErr.StatusCode {
+		case http.StatusTooManyRequests, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
+			return true
+		default:
+			return false
+		}
+	}
+
+	var netErr net.Error
+	if errors.As(err, &netErr) {
+		return netErr.Timeout()
+	}
+
+	return errors.Is(err, io.EOF)
+}
+
+func classifyRequestError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	var requestErr *RequestError
+	if errors.As(err, &requestErr) {
+		return requestErr
+	}
+
+	var invalidErr *invalidResponseError
+	if errors.As(err, &invalidErr) {
+		return &RequestError{
+			Code: ErrorCodeUpstreamInvalidResponse,
+			Err:  err,
+		}
+	}
+
+	var statusErr *upstreamStatusError
+	if errors.As(err, &statusErr) {
+		code := ErrorCodeUpstreamUnavailable
+		if statusErr.StatusCode >= http.StatusBadRequest && statusErr.StatusCode < http.StatusInternalServerError && statusErr.StatusCode != http.StatusTooManyRequests {
+			code = ErrorCodeUpstreamInvalidResponse
+		}
+
+		return &RequestError{
+			Code: code,
+			Err:  err,
+		}
+	}
+
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return &RequestError{
+			Code: ErrorCodeUpstreamTimeout,
+			Err:  err,
+		}
+	}
+
+	return &RequestError{
+		Code: ErrorCodeUpstreamUnavailable,
+		Err:  err,
+	}
 }
 
 func composeDisplayName(parts ...string) string {
@@ -306,4 +573,15 @@ func composeDisplayName(parts ...string) string {
 	}
 
 	return strings.Join(result, ", ")
+}
+
+func firstNonEmpty(parts ...string) string {
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			return part
+		}
+	}
+
+	return ""
 }

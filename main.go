@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"weather-diploma/internal/api"
 	"weather-diploma/internal/store"
@@ -35,7 +36,14 @@ func main() {
 	addr := ":" + port
 	log.Printf("weather app is running at http://localhost%s", addr)
 
-	if err := http.ListenAndServe(addr, server.Routes()); err != nil {
+	httpServer := &http.Server{
+		Addr:              addr,
+		Handler:           server.Routes(),
+		ReadHeaderTimeout: 5 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+
+	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatalf("listen: %v", err)
 	}
 }

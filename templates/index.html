@@ -10,33 +10,51 @@
 </head>
 <body>
   <div class="page-shell">
+    <div class="top-bar">
+      <div class="language-switcher" aria-label="Language switcher">
+        <button type="button" class="language-button" data-lang-switch="ru">
+          <span>🇷🇺</span>
+          <span>RU</span>
+        </button>
+        <button type="button" class="language-button" data-lang-switch="en">
+          <span>🇬🇧</span>
+          <span>EN</span>
+        </button>
+        <button type="button" class="language-button" data-lang-switch="zh">
+          <span>🇨🇳</span>
+          <span>中文</span>
+        </button>
+      </div>
+    </div>
+
     <header class="hero">
       <div class="brand-block">
         <p class="eyebrow">Go / SQLite / Open-Meteo</p>
         <h1>AeroCast</h1>
-        <p class="hero-copy">
+        <p class="hero-copy" data-i18n="brand.copy">
           Веб-приложение для прогноза погоды по городу, селу или посёлку
           с акцентом на осадки, комфорт восприятия и наглядную аналитику.
         </p>
       </div>
 
       <form class="search-panel" id="search-form" autocomplete="off">
-        <label class="search-label" for="location-input">Населённый пункт</label>
+        <label class="search-label" for="location-input" data-i18n="search.label">Населённый пункт</label>
         <div class="search-row">
           <input
             id="location-input"
             name="location"
             type="text"
             placeholder="Например: Казань, Зеленоградск, Таруса"
+            data-i18n-placeholder="search.placeholder"
             spellcheck="false"
           >
-          <button type="submit">Показать прогноз</button>
+          <button type="submit" data-i18n="search.submit">Показать прогноз</button>
         </div>
         <div class="search-actions">
-          <button type="button" class="geo-button" id="geo-button">Моя геопозиция</button>
+          <button type="button" class="geo-button" id="geo-button" data-i18n="search.geoButton">Моя геопозиция</button>
         </div>
         <div class="search-results" id="search-results" hidden></div>
-        <p class="search-hint">
+        <p class="search-hint" data-i18n="search.hint">
           Поддерживаются города, посёлки, сёла и другие населённые пункты.
         </p>
         <p class="search-status" id="geo-status" hidden></p>
@@ -47,7 +65,7 @@
       <section class="current-card panel">
         <div class="current-head">
           <div>
-            <p class="section-label">Текущая ситуация</p>
+            <p class="section-label" data-i18n="current.sectionLabel">Текущая ситуация</p>
             <h2 id="current-place">Загрузка прогноза...</h2>
             <p class="section-subtitle" id="current-summary">Подбираем первую локацию для демонстрации.</p>
           </div>
@@ -61,19 +79,19 @@
           </div>
           <div class="mini-grid">
             <article>
-              <span>Осадки сейчас</span>
+              <span data-i18n="current.precipNow">Осадки сейчас</span>
               <strong id="current-precip">--</strong>
             </article>
             <article>
-              <span>Влажность</span>
+              <span data-i18n="current.humidity">Влажность</span>
               <strong id="current-humidity">--</strong>
             </article>
             <article>
-              <span>Ветер</span>
+              <span data-i18n="current.wind">Ветер</span>
               <strong id="current-wind">--</strong>
             </article>
             <article>
-              <span>Часовой пояс</span>
+              <span data-i18n="current.timezone">Часовой пояс</span>
               <strong id="current-timezone">--</strong>
             </article>
           </div>
@@ -83,10 +101,10 @@
       <section class="forecast-card panel">
         <div class="section-head">
           <div>
-            <p class="section-label">Прогноз</p>
-            <h3>Ближайшие 3 дня</h3>
+            <p class="section-label" data-i18n="forecast.sectionLabel">Прогноз</p>
+            <h3 data-i18n="forecast.title">Ближайшие 3 дня</h3>
           </div>
-          <p class="section-subtitle">Краткая сводка по температуре, ветру и вероятности осадков.</p>
+          <p class="section-subtitle" data-i18n="forecast.subtitle">Краткая сводка по температуре, ветру и вероятности осадков.</p>
         </div>
         <div class="forecast-grid" id="forecast-grid"></div>
       </section>
@@ -94,8 +112,8 @@
       <section class="chart-card panel">
         <div class="section-head">
           <div>
-            <p class="section-label">Осадки</p>
-            <h3>Вероятность по часам</h3>
+            <p class="section-label" data-i18n="chart.sectionLabel">Осадки</p>
+            <h3 data-i18n="chart.title">Вероятность по часам</h3>
           </div>
           <p class="section-subtitle" id="chart-caption">Показываем вероятность осадков на 72 часа.</p>
         </div>
@@ -106,8 +124,8 @@
       <section class="details-card panel">
         <div class="section-head">
           <div>
-            <p class="section-label">Детали</p>
-            <h3>Данные для анализа</h3>
+            <p class="section-label" data-i18n="details.sectionLabel">Детали</p>
+            <h3 data-i18n="details.title">Данные для анализа</h3>
           </div>
         </div>
         <div class="details-grid" id="details-grid"></div>
@@ -116,10 +134,10 @@
       <section class="history-card panel">
         <div class="section-head">
           <div>
-            <p class="section-label">История</p>
-            <h3>Последние запросы</h3>
+            <p class="section-label" data-i18n="history.sectionLabel">История</p>
+            <h3 data-i18n="history.title">Последние запросы</h3>
           </div>
-          <p class="section-subtitle">Данные сохраняются в локальной SQLite базе.</p>
+          <p class="section-subtitle" data-i18n="history.subtitle">Данные сохраняются в локальной SQLite базе.</p>
         </div>
         <div class="history-list" id="history-list"></div>
       </section>
@@ -127,7 +145,7 @@
 
     <footer class="app-footer">
       <span>RSHU</span>
-      <span>Автор: Жуков Александр</span>
+      <span data-i18n="footer.author">Автор: Жуков Александр</span>
     </footer>
   </div>
 </body>
