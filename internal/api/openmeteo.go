@@ -144,11 +144,11 @@ func NewClient() *Client {
 	}
 }
 
-func (c *Client) SearchLocation(query string) ([]Location, error) {
+func (c *Client) SearchLocation(query, language string) ([]Location, error) {
 	params := url.Values{}
 	params.Set("name", strings.TrimSpace(query))
 	params.Set("count", "8")
-	params.Set("language", "ru")
+	params.Set("language", normalizeLanguage(language))
 	params.Set("format", "json")
 
 	var payload searchResponse
@@ -165,6 +165,19 @@ func (c *Client) SearchLocation(query string) ([]Location, error) {
 	}
 
 	return payload.Results, nil
+}
+
+func normalizeLanguage(language string) string {
+	switch strings.ToLower(strings.TrimSpace(language)) {
+	case "ru":
+		return "ru"
+	case "en":
+		return "en"
+	case "zh", "zh-cn", "zh-hans":
+		return "zh"
+	default:
+		return "ru"
+	}
 }
 
 func (c *Client) GetForecast(latitude, longitude float64, days int) (*ForecastResponse, error) {
