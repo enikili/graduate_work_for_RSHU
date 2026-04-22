@@ -19,6 +19,7 @@ const translations = {
       "current.loadingSubtitle": "Подбираем первую локацию для демонстрации.",
       "current.selectedLocationFallback": "Выбранная локация",
       "current.feelsLikePrefix": "Ощущается как",
+      "current.archiveSummary": "{weather}. Архивный снимок от {time}.",
       "current.precipNow": "Осадки сейчас",
       "current.humidity": "Влажность",
       "current.wind": "Ветер",
@@ -47,7 +48,38 @@ const translations = {
       "details.sunset": "Закат",
       "details.around": "Около {time}",
       "details.today": "Сегодня",
-      "details.analyticsNote": "Полезно для аналитики и сравнений.",
+      "details.analyticsNote": "Для сравнения.",
+      "map.sectionLabel": "Карта",
+      "map.title": "Локация на карте",
+      "map.subtitle": "Показываем точку выбранной локации, регион и координаты.",
+      "map.captionLocation": "Точка на карте для локации: {title}.",
+      "map.region": "Регион",
+      "map.country": "Страна",
+      "map.coordinates": "Координаты",
+      "map.openLink": "Открыть в OpenStreetMap",
+      "map.empty": "Карта появится после загрузки прогноза.",
+      "map.iframeTitle": "Карта локации: {title}",
+      "archive.sectionLabel": "Архив",
+      "archive.title": "Погода за 2 недели",
+      "archive.subtitle": "Данные за 2 недели открываются в отдельном окне с почасовой детализацией.",
+      "archive.empty": "Архив появится после загрузки прогноза для выбранной локации.",
+      "archive.openButton": "Открыть архив",
+      "archive.modalLabel": "Архив",
+      "archive.modalTitle": "Данные за 2 недели",
+      "archive.closeButton": "Закрыть",
+      "archive.previewText": "Доступен архив за {days} дней: с {start} по {end}.",
+      "archive.availableDays": "Дней",
+      "archive.wetDays": "Дождливых дней",
+      "archive.selected": "Открыто",
+      "archive.dayDetails": "Подробно за {date}",
+      "archive.maxTemp": "Макс. температура",
+      "archive.minTemp": "Мин. температура",
+      "archive.totalPrecip": "Осадки за день",
+      "archive.wetHours": "Часы с осадками",
+      "archive.hourlyTitle": "Почасовые данные",
+      "archive.hourlyTemp": "Температура",
+      "archive.hourlyPrecip": "Осадки",
+      "archive.hourlyEmpty": "Почасовые данные за этот день недоступны.",
       "history.sectionLabel": "История",
       "history.title": "Последние запросы",
       "history.subtitle": "Данные сохраняются в локальной SQLite базе.",
@@ -126,6 +158,7 @@ const translations = {
       "current.loadingSubtitle": "Selecting the first location for the demo.",
       "current.selectedLocationFallback": "Selected location",
       "current.feelsLikePrefix": "Feels like",
+      "current.archiveSummary": "{weather}. Archived snapshot from {time}.",
       "current.precipNow": "Precipitation now",
       "current.humidity": "Humidity",
       "current.wind": "Wind",
@@ -154,7 +187,38 @@ const translations = {
       "details.sunset": "Sunset",
       "details.around": "Around {time}",
       "details.today": "Today",
-      "details.analyticsNote": "Useful for analytics and comparisons.",
+      "details.analyticsNote": "For comparison.",
+      "map.sectionLabel": "Map",
+      "map.title": "Location on map",
+      "map.subtitle": "Showing the selected point, region, and coordinates.",
+      "map.captionLocation": "Map point for: {title}.",
+      "map.region": "Region",
+      "map.country": "Country",
+      "map.coordinates": "Coordinates",
+      "map.openLink": "Open in OpenStreetMap",
+      "map.empty": "The map will appear after the forecast loads.",
+      "map.iframeTitle": "Location map: {title}",
+      "archive.sectionLabel": "Archive",
+      "archive.title": "Weather for 2 weeks",
+      "archive.subtitle": "Two-week data opens in a separate window with hourly details.",
+      "archive.empty": "The archive will appear after the forecast loads for the selected location.",
+      "archive.openButton": "Open archive",
+      "archive.modalLabel": "Archive",
+      "archive.modalTitle": "Two-week data",
+      "archive.closeButton": "Close",
+      "archive.previewText": "An archive for {days} days is available: from {start} to {end}.",
+      "archive.availableDays": "Days",
+      "archive.wetDays": "Wet days",
+      "archive.selected": "Open",
+      "archive.dayDetails": "Details for {date}",
+      "archive.maxTemp": "Max temperature",
+      "archive.minTemp": "Min temperature",
+      "archive.totalPrecip": "Daily precipitation",
+      "archive.wetHours": "Wet hours",
+      "archive.hourlyTitle": "Hourly data",
+      "archive.hourlyTemp": "Temperature",
+      "archive.hourlyPrecip": "Precipitation",
+      "archive.hourlyEmpty": "Hourly data is unavailable for this day.",
       "history.sectionLabel": "History",
       "history.title": "Recent queries",
       "history.subtitle": "Data is stored in a local SQLite database.",
@@ -233,6 +297,7 @@ const translations = {
       "current.loadingSubtitle": "正在为演示选择第一个地点。",
       "current.selectedLocationFallback": "已选地点",
       "current.feelsLikePrefix": "体感",
+      "current.archiveSummary": "{weather}。归档快照保存于 {time}。",
       "current.precipNow": "当前降水",
       "current.humidity": "湿度",
       "current.wind": "风速",
@@ -261,7 +326,38 @@ const translations = {
       "details.sunset": "日落",
       "details.around": "约 {time}",
       "details.today": "今天",
-      "details.analyticsNote": "适合用于分析与对比。",
+      "details.analyticsNote": "便于对比。",
+      "map.sectionLabel": "地图",
+      "map.title": "地图中的地点",
+      "map.subtitle": "显示所选地点的位置、地区和坐标。",
+      "map.captionLocation": "{title} 的地图位置。",
+      "map.region": "地区",
+      "map.country": "国家",
+      "map.coordinates": "坐标",
+      "map.openLink": "在 OpenStreetMap 中打开",
+      "map.empty": "预报加载成功后，这里会显示地图。",
+      "map.iframeTitle": "{title} 的位置地图",
+      "archive.sectionLabel": "归档",
+      "archive.title": "近两周天气",
+      "archive.subtitle": "两周数据会在独立窗口中打开，并显示逐小时详情。",
+      "archive.empty": "成功加载所选地点的预报后，这里会显示历史归档。",
+      "archive.openButton": "打开归档",
+      "archive.modalLabel": "归档",
+      "archive.modalTitle": "两周数据",
+      "archive.closeButton": "关闭",
+      "archive.previewText": "已提供 {days} 天归档：从 {start} 到 {end}。",
+      "archive.availableDays": "天数",
+      "archive.wetDays": "降水天数",
+      "archive.selected": "已打开",
+      "archive.dayDetails": "{date} 的详情",
+      "archive.maxTemp": "最高气温",
+      "archive.minTemp": "最低气温",
+      "archive.totalPrecip": "当日降水",
+      "archive.wetHours": "有降水的小时数",
+      "archive.hourlyTitle": "逐小时数据",
+      "archive.hourlyTemp": "温度",
+      "archive.hourlyPrecip": "降水",
+      "archive.hourlyEmpty": "该日期没有可用的逐小时数据。",
       "history.sectionLabel": "历史",
       "history.title": "最近查询",
       "history.subtitle": "数据保存在本地 SQLite 数据库中。",
@@ -330,7 +426,11 @@ const state = {
   selectedLocation: null,
   currentLanguage: getStoredLanguage(),
   lastForecastPayload: null,
+  lastForecastMeta: {},
   lastError: null,
+  archiveDays: [],
+  activeArchiveDate: "",
+  isArchiveModalOpen: false,
 };
 
 const elements = {
@@ -352,7 +452,17 @@ const elements = {
   chartCaption: document.querySelector("#chart-caption"),
   chartSummary: document.querySelector("#chart-summary"),
   chart: document.querySelector("#precip-chart"),
+  mapCaption: document.querySelector("#map-caption"),
+  mapSummary: document.querySelector("#map-summary"),
+  mapFrame: document.querySelector("#map-frame"),
+  mapLink: document.querySelector("#map-link"),
   detailsGrid: document.querySelector("#details-grid"),
+  archivePreview: document.querySelector("#archive-preview"),
+  archiveOpenButton: document.querySelector("#archive-open-button"),
+  archiveModal: document.querySelector("#archive-modal"),
+  archiveModalClose: document.querySelector("#archive-modal-close"),
+  archiveList: document.querySelector("#archive-list"),
+  archiveView: document.querySelector("#archive-view"),
   historyList: document.querySelector("#history-list"),
   languageButtons: document.querySelectorAll("[data-lang-switch]"),
 };
@@ -479,10 +589,13 @@ function applyLanguage(language, options = {}) {
       elements.currentSummary.textContent = t("current.loadingSubtitle");
       elements.feelsLike.textContent = `${t("current.feelsLikePrefix")} --`;
       elements.chartCaption.textContent = t("chart.defaultCaption");
+      renderMapEmpty();
     }
   } else {
-    renderForecast(state.lastForecastPayload);
+    renderForecast(state.lastForecastPayload, state.lastForecastMeta);
   }
+
+  renderArchiveSection();
 
   elements.input.value = "";
   elements.results.innerHTML = "";
@@ -632,6 +745,82 @@ function shortTime(dateText) {
   }).format(date);
 }
 
+function composeLocationTitle(location) {
+  return [location?.name, location?.region, location?.country]
+    .filter(Boolean)
+    .filter((item, index, array) => array.indexOf(item) === index)
+    .join(", ");
+}
+
+function parseStoredDateTime(value) {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.includes("T") ? value : value.replace(" ", "T");
+  const utcCandidate = normalized.endsWith("Z") ? normalized : `${normalized}Z`;
+  const utcDate = new Date(utcCandidate);
+  if (!Number.isNaN(utcDate.getTime())) {
+    return utcDate;
+  }
+
+  const fallbackDate = new Date(value);
+  if (!Number.isNaN(fallbackDate.getTime())) {
+    return fallbackDate;
+  }
+
+  return null;
+}
+
+function formatStoredDateTime(value) {
+  const date = parseStoredDateTime(value);
+  if (!date) {
+    return t("errors.noData");
+  }
+
+  return new Intl.DateTimeFormat(getCurrentLocale(), {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatCoordinates(latitude, longitude) {
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return t("errors.noData");
+  }
+
+  return `${Number(latitude).toFixed(3)}, ${Number(longitude).toFixed(3)}`;
+}
+
+function buildMapURLs(location) {
+  const latitude = Number(location?.latitude);
+  const longitude = Number(location?.longitude);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  const latDelta = 0.22;
+  const longitudeScale = Math.max(Math.cos((latitude * Math.PI) / 180), 0.35);
+  const lonDelta = 0.22 / longitudeScale;
+  const params = new URLSearchParams({
+    bbox: [
+      (longitude - lonDelta).toFixed(6),
+      (latitude - latDelta).toFixed(6),
+      (longitude + lonDelta).toFixed(6),
+      (latitude + latDelta).toFixed(6),
+    ].join(","),
+    layer: "mapnik",
+    marker: `${latitude.toFixed(6)},${longitude.toFixed(6)}`,
+  });
+
+  return {
+    embedURL: `https://www.openstreetmap.org/export/embed.html?${params.toString()}`,
+    externalURL: `https://www.openstreetmap.org/?mlat=${latitude.toFixed(6)}&mlon=${longitude.toFixed(6)}#map=9/${latitude.toFixed(6)}/${longitude.toFixed(6)}`,
+  };
+}
+
 function getProbabilityDataset(hourly) {
   const values = Array.isArray(hourly?.precipitation_probability)
     ? hourly.precipitation_probability
@@ -668,6 +857,263 @@ function renderPanelEmpty(container, message) {
   container.innerHTML = `
     <div class="panel-empty">
       <p>${escapeHTML(message)}</p>
+    </div>
+  `;
+}
+
+function renderMapEmpty(message = t("map.empty")) {
+  elements.mapCaption.textContent = t("map.subtitle");
+  elements.mapSummary.innerHTML = "";
+  renderPanelEmpty(elements.mapFrame, message);
+  if (elements.mapLink) {
+    elements.mapLink.hidden = true;
+    elements.mapLink.removeAttribute("href");
+  }
+}
+
+function renderMap(location, forecast) {
+  const mapURLs = buildMapURLs(location);
+  const locationTitle = composeLocationTitle(location) || t("current.selectedLocationFallback");
+  if (!mapURLs) {
+    renderMapEmpty();
+    return;
+  }
+
+  elements.mapCaption.textContent = t("map.captionLocation", { title: locationTitle });
+  elements.mapSummary.innerHTML = `
+    <article class="map-chip">
+      <span>${escapeHTML(t("map.region"))}</span>
+      <strong>${escapeHTML(location.region || t("errors.noData"))}</strong>
+    </article>
+    <article class="map-chip">
+      <span>${escapeHTML(t("map.country"))}</span>
+      <strong>${escapeHTML(location.country || t("errors.noData"))}</strong>
+    </article>
+    <article class="map-chip map-chip--wide">
+      <span>${escapeHTML(t("map.coordinates"))}</span>
+      <strong>${escapeHTML(formatCoordinates(location.latitude, location.longitude))}</strong>
+    </article>
+    <article class="map-chip">
+      <span>${escapeHTML(t("current.timezone"))}</span>
+      <strong>${escapeHTML(forecast?.timezone || t("errors.noData"))}</strong>
+    </article>
+  `;
+  elements.mapFrame.innerHTML = `
+    <iframe
+      src="${escapeHTML(mapURLs.embedURL)}"
+      title="${escapeHTML(t("map.iframeTitle", { title: locationTitle }))}"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+    ></iframe>
+  `;
+
+  if (elements.mapLink) {
+    elements.mapLink.hidden = false;
+    elements.mapLink.href = mapURLs.externalURL;
+    elements.mapLink.textContent = t("map.openLink");
+  }
+}
+
+function openArchiveModal() {
+  if (!elements.archiveModal || !state.archiveDays.length) {
+    return;
+  }
+
+  state.isArchiveModalOpen = true;
+  elements.archiveModal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function closeArchiveModal() {
+  if (!elements.archiveModal) {
+    return;
+  }
+
+  state.isArchiveModalOpen = false;
+  elements.archiveModal.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+
+function getWetHoursCount(day) {
+  const hourly = Array.isArray(day?.hourly) ? day.hourly : [];
+  return hourly.filter((item) => Number(item?.precipitation) > 0.05).length;
+}
+
+function formatArchiveDate(dateText) {
+  if (!dateText) {
+    return t("errors.noData");
+  }
+
+  const date = new Date(`${dateText}T12:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return t("errors.noData");
+  }
+
+  return new Intl.DateTimeFormat(getCurrentLocale(), {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
+
+function getActiveArchiveDay() {
+  if (!state.archiveDays.length) {
+    return null;
+  }
+
+  return state.archiveDays.find((day) => day.date === state.activeArchiveDate) || state.archiveDays[0];
+}
+
+function renderArchivePreview(days) {
+  if (!elements.archivePreview || !elements.archiveOpenButton) {
+    return;
+  }
+
+  if (!days.length) {
+    elements.archivePreview.innerHTML = `
+      <div class="archive-preview__empty">
+        <p>${escapeHTML(t("archive.empty"))}</p>
+      </div>
+    `;
+    elements.archiveOpenButton.disabled = true;
+    return;
+  }
+
+  const firstDay = days[days.length - 1];
+  const lastDay = days[0];
+  const wetDays = days.filter((day) => Number(day?.precipitation_sum) > 0.05).length;
+
+  elements.archivePreview.innerHTML = `
+    <p class="archive-preview__text">${escapeHTML(t("archive.previewText", {
+      days: String(days.length),
+      start: formatArchiveDate(firstDay.date),
+      end: formatArchiveDate(lastDay.date),
+    }))}</p>
+    <div class="archive-preview__stats">
+      <article class="archive-preview__card">
+        <span>${escapeHTML(t("archive.availableDays"))}</span>
+        <strong>${escapeHTML(String(days.length))}</strong>
+      </article>
+      <article class="archive-preview__card">
+        <span>${escapeHTML(t("archive.wetDays"))}</span>
+        <strong>${escapeHTML(String(wetDays))}</strong>
+      </article>
+      <article class="archive-preview__card">
+        <span>${escapeHTML(t("archive.totalPrecip"))}</span>
+        <strong>${escapeHTML(formatPrecip(days.reduce((sum, day) => sum + (Number(day?.precipitation_sum) || 0), 0)))}</strong>
+      </article>
+    </div>
+  `;
+  elements.archiveOpenButton.disabled = false;
+}
+
+function renderArchiveSection() {
+  if (!state.archiveDays.length && state.isArchiveModalOpen) {
+    closeArchiveModal();
+  }
+
+  renderArchivePreview(state.archiveDays);
+  renderArchiveList(state.archiveDays, state.activeArchiveDate);
+  renderArchiveDetail(getActiveArchiveDay());
+}
+
+function renderArchiveList(days, activeDate = state.activeArchiveDate) {
+  if (!days.length) {
+    elements.archiveList.innerHTML = `<p class="archive-empty">${escapeHTML(t("archive.empty"))}</p>`;
+    return;
+  }
+
+  elements.archiveList.innerHTML = "";
+  days.forEach((day) => {
+    const meta = getWeatherMeta(day.weather_code);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "archive-item";
+    button.classList.toggle("is-active", day.date === activeDate);
+    button.innerHTML = `
+      <div class="archive-item__head">
+        <div>
+          <strong>${escapeHTML(formatArchiveDate(day.date))}</strong>
+          <span>${escapeHTML(meta.label)}</span>
+        </div>
+        ${day.date === activeDate ? `<span class="archive-item__stamp">${escapeHTML(t("archive.selected"))}</span>` : ""}
+      </div>
+      <div class="archive-item__stats">
+        <span>
+          <small>${escapeHTML(t("archive.maxTemp"))}</small>
+          <strong>${escapeHTML(formatTemperature(day.temperature_max))}</strong>
+        </span>
+        <span>
+          <small>${escapeHTML(t("archive.minTemp"))}</small>
+          <strong>${escapeHTML(formatTemperature(day.temperature_min))}</strong>
+        </span>
+        <span>
+          <small>${escapeHTML(t("archive.totalPrecip"))}</small>
+          <strong>${escapeHTML(formatPrecip(day.precipitation_sum))}</strong>
+        </span>
+      </div>
+    `;
+
+    button.addEventListener("click", () => {
+      state.activeArchiveDate = day.date;
+      renderArchiveSection();
+    });
+
+    elements.archiveList.appendChild(button);
+  });
+}
+
+function renderArchiveDetail(day) {
+  if (!day) {
+    renderPanelEmpty(elements.archiveView, t("archive.empty"));
+    return;
+  }
+
+  const meta = getWeatherMeta(day.weather_code);
+  const hourly = Array.isArray(day.hourly) ? day.hourly.filter((item) => item?.time) : [];
+  const wetHours = getWetHoursCount(day);
+
+  elements.archiveView.innerHTML = `
+    <div class="archive-detail-head">
+      <div>
+        <p class="section-label">${escapeHTML(t("archive.hourlyTitle"))}</p>
+        <h4>${escapeHTML(t("archive.dayDetails", { date: formatArchiveDate(day.date) }))}</h4>
+        <p class="section-subtitle">${escapeHTML(meta.label)}</p>
+      </div>
+    </div>
+    <div class="archive-detail-grid">
+      <article class="archive-detail-card">
+        <span>${escapeHTML(t("archive.maxTemp"))}</span>
+        <strong>${escapeHTML(formatTemperature(day.temperature_max))}</strong>
+      </article>
+      <article class="archive-detail-card">
+        <span>${escapeHTML(t("archive.minTemp"))}</span>
+        <strong>${escapeHTML(formatTemperature(day.temperature_min))}</strong>
+      </article>
+      <article class="archive-detail-card">
+        <span>${escapeHTML(t("archive.totalPrecip"))}</span>
+        <strong>${escapeHTML(formatPrecip(day.precipitation_sum))}</strong>
+      </article>
+      <article class="archive-detail-card">
+        <span>${escapeHTML(t("archive.wetHours"))}</span>
+        <strong>${escapeHTML(String(wetHours))}</strong>
+      </article>
+    </div>
+    <div class="archive-hourly-block">
+      <p class="archive-hourly-title">${escapeHTML(t("archive.hourlyTitle"))}</p>
+      <div class="archive-hourly-grid">
+        ${hourly.length ? hourly.map((item) => `
+          <article class="archive-hour-card ${Number(item.precipitation) > 0.05 ? "archive-hour-card--wet" : ""}">
+            <span class="archive-hour-card__time">${escapeHTML(formatHour(item.time))}</span>
+            <strong>${escapeHTML(formatTemperature(item.temperature))}</strong>
+            <span class="archive-hour-card__metric">${escapeHTML(t("archive.hourlyPrecip"))}: ${escapeHTML(formatPrecip(item.precipitation))}</span>
+          </article>
+        `).join("") : `
+          <div class="panel-empty">
+            <p>${escapeHTML(t("archive.hourlyEmpty"))}</p>
+          </div>
+        `}
+      </div>
     </div>
   `;
 }
@@ -851,6 +1297,35 @@ async function reverseGeocodeLocation(latitude, longitude) {
   );
 }
 
+async function loadArchive(location) {
+  const latitude = Number(location?.latitude);
+  const longitude = Number(location?.longitude);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    state.archiveDays = [];
+    state.activeArchiveDate = "";
+    renderArchiveSection();
+    return [];
+  }
+
+  const params = new URLSearchParams({
+    lat: String(latitude),
+    lon: String(longitude),
+    name: location?.name || "",
+    region: location?.region || "",
+    country: location?.country || "",
+    days: "14",
+    lang: getSearchLanguage(),
+  });
+  const payload = await fetchJSON(
+    `/api/archive?${params.toString()}`,
+  );
+  const days = Array.isArray(payload.days) ? payload.days : [];
+  state.archiveDays = days;
+  state.activeArchiveDate = days[0]?.date || "";
+  renderArchiveSection();
+  return days;
+}
+
 async function fetchForecast(location, options = {}) {
   const params = new URLSearchParams({
     lat: String(location.latitude),
@@ -865,6 +1340,7 @@ async function fetchForecast(location, options = {}) {
   });
 
   const payload = await fetchJSON(`/api/forecast?${params.toString()}`);
+  state.activeArchiveDate = "";
   state.selectedLocation = {
     name: payload.location.name,
     region: payload.location.region,
@@ -873,7 +1349,22 @@ async function fetchForecast(location, options = {}) {
     longitude: payload.location.longitude,
   };
   renderForecast(payload);
-  await loadHistory();
+
+  const [historyResult, archiveResult] = await Promise.allSettled([
+    loadHistory(),
+    loadArchive(payload.location),
+  ]);
+
+  if (historyResult.status === "rejected") {
+    console.error(historyResult.reason);
+  }
+
+  if (archiveResult.status === "rejected") {
+    console.error(archiveResult.reason);
+    state.archiveDays = [];
+    state.activeArchiveDate = "";
+    renderArchiveSection();
+  }
 }
 
 function getDisplayErrorMessage(error) {
@@ -928,20 +1419,23 @@ function renderSuggestions(items) {
   elements.results.hidden = false;
 }
 
-function renderForecast(payload) {
+function renderForecast(payload, meta = {}) {
   state.lastForecastPayload = payload;
+  state.lastForecastMeta = meta;
   state.lastError = null;
 
   const forecast = payload.forecast;
   const location = payload.location;
   const currentMeta = getWeatherMeta(forecast.current.weather_code);
-  const locationTitle = [location.name, location.region, location.country]
-    .filter(Boolean)
-    .filter((item, index, array) => array.indexOf(item) === index)
-    .join(", ");
+  const locationTitle = composeLocationTitle(location);
 
   elements.currentPlace.textContent = locationTitle || t("current.selectedLocationFallback");
-  elements.currentSummary.textContent = currentMeta.label;
+  elements.currentSummary.textContent = meta.archivedAt
+    ? t("current.archiveSummary", {
+      weather: currentMeta.label,
+      time: formatStoredDateTime(meta.archivedAt),
+    })
+    : currentMeta.label;
   elements.currentIcon.innerHTML = currentSceneMarkup(currentMeta.icon, forecast.current.is_day === 1);
   elements.currentTemp.textContent = formatTemperature(forecast.current.temperature_2m);
   elements.feelsLike.textContent = `${t("current.feelsLikePrefix")} ${formatTemperature(forecast.current.apparent_temperature)}`;
@@ -958,6 +1452,7 @@ function renderForecast(payload) {
   renderDailyCards(forecast.daily);
   renderDetails(forecast);
   renderChart(forecast.hourly, locationTitle || t("current.selectedLocationFallback"));
+  renderMap(location, forecast);
 }
 
 function renderDailyCards(daily) {
@@ -1512,6 +2007,10 @@ async function bootstrap() {
 function showError(error) {
   state.lastError = error;
   state.lastForecastPayload = null;
+  state.lastForecastMeta = {};
+  state.archiveDays = [];
+  state.activeArchiveDate = "";
+  closeArchiveModal();
   const message = getDisplayErrorMessage(error);
   elements.currentPlace.textContent = t("errors.loadDataTitle");
   elements.currentSummary.textContent = message;
@@ -1531,6 +2030,8 @@ function showError(error) {
       <p>${escapeHTML(message)}</p>
     </div>
   `;
+  renderMapEmpty();
+  renderArchiveSection();
 }
 
 elements.form.addEventListener("submit", async (event) => {
@@ -1581,9 +2082,35 @@ document.addEventListener("click", (event) => {
   }
 });
 
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && state.isArchiveModalOpen) {
+    closeArchiveModal();
+  }
+});
+
 if (elements.geoButton) {
   elements.geoButton.addEventListener("click", async () => {
     await useCurrentLocation();
+  });
+}
+
+if (elements.archiveOpenButton) {
+  elements.archiveOpenButton.addEventListener("click", () => {
+    openArchiveModal();
+  });
+}
+
+if (elements.archiveModalClose) {
+  elements.archiveModalClose.addEventListener("click", () => {
+    closeArchiveModal();
+  });
+}
+
+if (elements.archiveModal) {
+  elements.archiveModal.addEventListener("click", (event) => {
+    if (event.target instanceof HTMLElement && event.target.hasAttribute("data-archive-close")) {
+      closeArchiveModal();
+    }
   });
 }
 

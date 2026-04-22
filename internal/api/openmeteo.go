@@ -15,10 +15,11 @@ import (
 )
 
 const (
-	forecastEndpoint         = "https://api.open-meteo.com/v1/forecast"
-	gfsEndpoint              = "https://api.open-meteo.com/v1/gfs"
-	geocodingEndpoint        = "https://geocoding-api.open-meteo.com/v1/search"
-	reverseGeocodingEndpoint = "https://nominatim.openstreetmap.org/reverse"
+	forecastEndpoint          = "https://api.open-meteo.com/v1/forecast"
+	gfsEndpoint               = "https://api.open-meteo.com/v1/gfs"
+	historicalWeatherEndpoint = "https://archive-api.open-meteo.com/v1/archive"
+	geocodingEndpoint         = "https://geocoding-api.open-meteo.com/v1/search"
+	reverseGeocodingEndpoint  = "https://nominatim.openstreetmap.org/reverse"
 )
 
 type Client struct {
@@ -211,6 +212,46 @@ type DailyForecast struct {
 	Sunset                      []string  `json:"sunset"`
 }
 
+type HistoricalArchiveResponse struct {
+	Latitude             float64               `json:"latitude"`
+	Longitude            float64               `json:"longitude"`
+	Elevation            float64               `json:"elevation"`
+	Timezone             string                `json:"timezone"`
+	TimezoneAbbreviation string                `json:"timezone_abbreviation"`
+	HourlyUnits          HistoricalHourlyUnits `json:"hourly_units"`
+	Hourly               HistoricalHourly      `json:"hourly"`
+	DailyUnits           HistoricalDailyUnits  `json:"daily_units"`
+	Daily                HistoricalDaily       `json:"daily"`
+}
+
+type HistoricalHourlyUnits struct {
+	Time          string `json:"time"`
+	Temperature2M string `json:"temperature_2m"`
+	Precipitation string `json:"precipitation"`
+}
+
+type HistoricalHourly struct {
+	Time          []string  `json:"time"`
+	Temperature2M []float64 `json:"temperature_2m"`
+	Precipitation []float64 `json:"precipitation"`
+}
+
+type HistoricalDailyUnits struct {
+	Time             string `json:"time"`
+	WeatherCode      string `json:"weather_code"`
+	Temperature2MMax string `json:"temperature_2m_max"`
+	Temperature2MMin string `json:"temperature_2m_min"`
+	PrecipitationSum string `json:"precipitation_sum"`
+}
+
+type HistoricalDaily struct {
+	Time             []string  `json:"time"`
+	WeatherCode      []int     `json:"weather_code"`
+	Temperature2MMax []float64 `json:"temperature_2m_max"`
+	Temperature2MMin []float64 `json:"temperature_2m_min"`
+	PrecipitationSum []float64 `json:"precipitation_sum"`
+}
+
 type probabilityFallbackResponse struct {
 	HourlyUnits struct {
 		PrecipitationProbability string `json:"precipitation_probability"`
@@ -340,6 +381,17 @@ func normalizeReverseLanguage(language string) string {
 	}
 }
 
+func archiveDateRange(now time.Time, days int) (string, string) {
+	if days < 1 {
+		days = 1
+	}
+
+	endDate := now.AddDate(0, 0, -1)
+	startDate := endDate.AddDate(0, 0, -(days - 1))
+
+	return startDate.Format("2006-01-02"), endDate.Format("2006-01-02")
+}
+
 func (c *Client) GetForecast(latitude, longitude float64, days int) (*ForecastResponse, error) {
 	if days < 1 {
 		days = 1
@@ -390,6 +442,41 @@ func (c *Client) GetForecast(latitude, longitude float64, days int) (*ForecastRe
 	}
 
 	return &forecast, nil
+}
+
+func (c *Client) GetHistoricalArchive(latitude, longitude float64, pastDays int) (*HistoricalArchiveResponse, error) {
+	if pastDays < 1 {
+		pastDays = 14
+	}
+	if pastDays > 14 {
+		pastDays = 14
+	}
+
+	startDate, endDate := archiveDateRange(time.Now().UTC(), pastDays)
+
+	params := url.Values{}
+	params.Set("latitude", strconv.FormatFloat(latitude, 'f', 4, 64))
+	params.Set("longitude", strconv.FormatFloat(longitude, 'f', 4, 64))
+	params.Set("start_date", startDate)
+	params.Set("end_date", endDate)
+	params.Set("timezone", "auto")
+	params.Set("hourly", strings.Join([]string{
+		"temperature_2m",
+		"precipitation",
+	}, ","))
+	params.Set("daily", strings.Join([]string{
+		"weather_code",
+		"temperature_2m_max",
+		"temperature_2m_min",
+		"precipitation_sum",
+	}, ","))
+
+	var archive HistoricalArchiveResponse
+	if err := c.getJSON(historicalWeatherEndpoint+"?"+params.Encode(), &archive); err != nil {
+		return nil, err
+	}
+
+	return &archive, nil
 }
 
 func (c *Client) mergeProbabilityFallback(forecast *ForecastResponse, latitude, longitude float64, days int) error {

@@ -25,6 +25,29 @@ type forecastPayload struct {
 	Forecast *api.ForecastResponse `json:"forecast"`
 }
 
+type archivePayload struct {
+	Location  locationPayload     `json:"location"`
+	StartDate string              `json:"start_date"`
+	EndDate   string              `json:"end_date"`
+	Timezone  string              `json:"timezone"`
+	Days      []archiveDayPayload `json:"days"`
+}
+
+type archiveDayPayload struct {
+	Date             string               `json:"date"`
+	WeatherCode      int                  `json:"weather_code"`
+	TemperatureMax   float64              `json:"temperature_max"`
+	TemperatureMin   float64              `json:"temperature_min"`
+	PrecipitationSum float64              `json:"precipitation_sum"`
+	Hourly           []archiveHourPayload `json:"hourly"`
+}
+
+type archiveHourPayload struct {
+	Time          string  `json:"time"`
+	Temperature   float64 `json:"temperature"`
+	Precipitation float64 `json:"precipitation"`
+}
+
 type locationPayload struct {
 	Name      string  `json:"name"`
 	Region    string  `json:"region"`
@@ -61,6 +84,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("GET /api/reverse-geocode", s.handleReverseGeocode)
 	mux.HandleFunc("GET /api/forecast", s.handleForecast)
 	mux.HandleFunc("GET /api/history", s.handleHistory)
+	mux.HandleFunc("GET /api/archive", s.handleArchive)
 
 	return logRequests(mux)
 }
@@ -201,6 +225,139 @@ func (s *Server) handleHistory(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"items": items,
 	})
+}
+
+func (s *Server) handleArchive(w http.ResponseWriter, r *http.Request) {
+	latitude, err := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
+	if err != nil {
+		writeAPIError(w, http.StatusBadRequest, "invalid_request", "invalid latitude")
+		return
+	}
+
+	longitude, err := strconv.ParseFloat(r.URL.Query().Get("lon"), 64)
+	if err != nil {
+		writeAPIError(w, http.StatusBadRequest, "invalid_request", "invalid longitude")
+		return
+	}
+
+	location := locationPayload{
+		Name:      strings.TrimSpace(r.URL.Query().Get("name")),
+		Region:    strings.TrimSpace(r.URL.Query().Get("region")),
+		Country:   strings.TrimSpace(r.URL.Query().Get("country")),
+		Latitude:  latitude,
+		Longitude: longitude,
+	}
+
+	archiveResponse, err := s.apiClient.GetHistoricalArchive(latitude, longitude, parseInt(r.URL.Query().Get("days"), 14))
+	if err != nil {
+		log.Printf("weather archive: %v", err)
+		writeServiceError(w, err)
+		return
+	}
+
+	if shouldResolveLocationName(location.Name) {
+		language := strings.TrimSpace(r.URL.Query().Get("lang"))
+		resolvedLocation, resolveErr := s.apiClient.ReverseGeocode(latitude, longitude, language)
+		if resolveErr != nil {
+			log.Printf("resolve archive location: %v", resolveErr)
+		} else if resolvedLocation != nil {
+			location.Name = resolvedLocation.Name
+			location.Region = firstNonEmptyString(location.Region, resolvedLocation.Admin1)
+			location.Country = firstNonEmptyString(location.Country, resolvedLocation.Country)
+		}
+	}
+
+	writeJSON(w, http.StatusOK, buildArchivePayload(location, archiveResponse))
+}
+
+func buildArchivePayload(location locationPayload, archiveResponse *api.HistoricalArchiveResponse) archivePayload {
+	if archiveResponse == nil {
+		return archivePayload{
+			Location: location,
+		}
+	}
+
+	hourlyByDate := map[string][]archiveHourPayload{}
+	hourlyLength := minInt(
+		len(archiveResponse.Hourly.Time),
+		len(archiveResponse.Hourly.Temperature2M),
+		len(archiveResponse.Hourly.Precipitation),
+	)
+
+	for index := 0; index < hourlyLength; index += 1 {
+		timeText := strings.TrimSpace(archiveResponse.Hourly.Time[index])
+		if timeText == "" {
+			continue
+		}
+
+		dateText := timeText
+		if cutIndex := strings.Index(timeText, "T"); cutIndex > 0 {
+			dateText = timeText[:cutIndex]
+		}
+
+		hourlyByDate[dateText] = append(hourlyByDate[dateText], archiveHourPayload{
+			Time:          timeText,
+			Temperature:   archiveResponse.Hourly.Temperature2M[index],
+			Precipitation: archiveResponse.Hourly.Precipitation[index],
+		})
+	}
+
+	dailyLength := len(archiveResponse.Daily.Time)
+	days := make([]archiveDayPayload, 0, dailyLength)
+	for index := dailyLength - 1; index >= 0; index -= 1 {
+		dateText := strings.TrimSpace(archiveResponse.Daily.Time[index])
+		if dateText == "" {
+			continue
+		}
+
+		day := archiveDayPayload{
+			Date:   dateText,
+			Hourly: hourlyByDate[dateText],
+		}
+		if index < len(archiveResponse.Daily.WeatherCode) {
+			day.WeatherCode = archiveResponse.Daily.WeatherCode[index]
+		}
+		if index < len(archiveResponse.Daily.Temperature2MMax) {
+			day.TemperatureMax = archiveResponse.Daily.Temperature2MMax[index]
+		}
+		if index < len(archiveResponse.Daily.Temperature2MMin) {
+			day.TemperatureMin = archiveResponse.Daily.Temperature2MMin[index]
+		}
+		if index < len(archiveResponse.Daily.PrecipitationSum) {
+			day.PrecipitationSum = archiveResponse.Daily.PrecipitationSum[index]
+		}
+		days = append(days, day)
+	}
+
+	startDate := ""
+	endDate := ""
+	if len(days) > 0 {
+		endDate = days[0].Date
+		startDate = days[len(days)-1].Date
+	}
+
+	return archivePayload{
+		Location:  location,
+		StartDate: startDate,
+		EndDate:   endDate,
+		Timezone:  archiveResponse.Timezone,
+		Days:      days,
+	}
+}
+
+func minInt(values ...int) int {
+	if len(values) == 0 {
+		return 0
+	}
+
+	minValue := values[0]
+	for _, value := range values[1:] {
+		if value < minValue {
+			minValue = value
+		}
+	}
+
+	return minValue
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {

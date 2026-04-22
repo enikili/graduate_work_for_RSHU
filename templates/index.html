@@ -121,6 +121,19 @@
         <div class="chart-frame" id="precip-chart"></div>
       </section>
 
+      <section class="map-card panel">
+        <div class="section-head">
+          <div>
+            <p class="section-label" data-i18n="map.sectionLabel">Карта</p>
+            <h3 data-i18n="map.title">Локация на карте</h3>
+          </div>
+          <p class="section-subtitle" id="map-caption" data-i18n="map.subtitle">Показываем точку выбранной локации, регион и координаты.</p>
+        </div>
+        <div class="map-summary" id="map-summary"></div>
+        <div class="map-frame" id="map-frame"></div>
+        <a class="map-link" id="map-link" href="#" target="_blank" rel="noreferrer" hidden data-i18n="map.openLink">Открыть в OpenStreetMap</a>
+      </section>
+
       <section class="details-card panel">
         <div class="section-head">
           <div>
@@ -129,6 +142,18 @@
           </div>
         </div>
         <div class="details-grid" id="details-grid"></div>
+      </section>
+
+      <section class="archive-card panel">
+        <div class="section-head">
+          <div>
+            <p class="section-label" data-i18n="archive.sectionLabel">Архив</p>
+            <h3 data-i18n="archive.title">Погода за 2 недели</h3>
+          </div>
+          <p class="section-subtitle" data-i18n="archive.subtitle">Данные за 2 недели открываются в отдельном окне с почасовой детализацией.</p>
+        </div>
+        <div class="archive-preview" id="archive-preview"></div>
+        <button type="button" class="archive-open-button" id="archive-open-button" data-i18n="archive.openButton">Открыть архив</button>
       </section>
 
       <section class="history-card panel">
@@ -147,6 +172,23 @@
       <span>RSHU</span>
       <span data-i18n="footer.author">Автор: Жуков Александр</span>
     </footer>
+  </div>
+
+  <div class="archive-modal" id="archive-modal" hidden>
+    <div class="archive-modal__backdrop" data-archive-close></div>
+    <div class="archive-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="archive-modal-title">
+      <div class="archive-modal__top">
+        <div>
+          <p class="section-label" data-i18n="archive.modalLabel">Архив</p>
+          <h3 id="archive-modal-title" data-i18n="archive.modalTitle">Данные за 2 недели</h3>
+        </div>
+        <button type="button" class="archive-modal__close" id="archive-modal-close" data-i18n="archive.closeButton">Закрыть</button>
+      </div>
+      <div class="archive-layout">
+        <div class="archive-list" id="archive-list"></div>
+        <div class="archive-view" id="archive-view"></div>
+      </div>
+    </div>
   </div>
 </body>
 </html>

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"testing"
+	"time"
 )
 
 type timeoutError struct{}
@@ -88,5 +89,19 @@ func TestClassifyRequestError(t *testing.T) {
 				t.Fatalf("request error code = %q, want %q", requestErr.Code, testCase.want)
 			}
 		})
+	}
+}
+
+func TestArchiveDateRange(t *testing.T) {
+	now := time.Date(2026, time.April, 22, 14, 30, 0, 0, time.UTC)
+
+	startDate, endDate := archiveDateRange(now, 14)
+	if startDate != "2026-04-08" || endDate != "2026-04-21" {
+		t.Fatalf("archiveDateRange(...) = %s..%s, want 2026-04-08..2026-04-21", startDate, endDate)
+	}
+
+	startDate, endDate = archiveDateRange(now, 1)
+	if startDate != "2026-04-21" || endDate != "2026-04-21" {
+		t.Fatalf("archiveDateRange(...,1) = %s..%s, want 2026-04-21..2026-04-21", startDate, endDate)
 	}
 }
